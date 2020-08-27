@@ -11,6 +11,11 @@ interface User {
   name: string
 }
 
+interface Circle {
+  x: string
+  y: string
+}
+
 const users = new Map<string, User>()
 
 export default (req: NextApiRequest, res: NextApiResponse) => {
@@ -18,6 +23,8 @@ export default (req: NextApiRequest, res: NextApiResponse) => {
 
   if (!server.io) {
     const io = socketIO(server)
+
+    const circles: Circle[] = []
 
     io.on("connection", socket => {
       const user: User = {
@@ -32,7 +39,14 @@ export default (req: NextApiRequest, res: NextApiResponse) => {
         users.delete(socket.id)
       })
 
+      socket.on("add-circle", (circle: Circle) => {
+        circles.push(circle)
+        io.emit("add-circle", circle)
+      })
+
       socket.emit("message", `Your assigned name is "${user.name}"`)
+
+      socket.emit("intialize-state", circles)
     })
 
     server.io = io
