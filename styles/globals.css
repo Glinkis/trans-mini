@@ -14,3 +14,8 @@ a {
 * {
   box-sizing: border-box;
 }
+
+:root {
+  --text-color: #f1f3f8;
+  --background-color: #1b1b2f;
+}
