@@ -7,6 +7,12 @@ export const config: PageConfig = {
   },
 }
 
+interface User {
+  name: string
+}
+
+const users = new Map<string, User>()
+
 export default (req: NextApiRequest, res: NextApiResponse) => {
   const server = res.socket["server"]
 
@@ -14,8 +20,19 @@ export default (req: NextApiRequest, res: NextApiResponse) => {
     const io = socketIO(server)
 
     io.on("connection", socket => {
-      socket.broadcast.emit("a user connected")
-      socket.emit("message", "Hello there!")
+      const user: User = {
+        name: `User-${users.size}`,
+      }
+
+      socket.broadcast.emit("user-connected", user.name)
+      users.set(socket.id, user)
+
+      socket.on("disconnect", () => {
+        socket.broadcast.emit("user-disconnected", user.name)
+        users.delete(socket.id)
+      })
+
+      socket.emit("message", `Your assigned name is "${user.name}"`)
     })
 
     server.io = io
