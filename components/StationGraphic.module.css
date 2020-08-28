@@ -4,3 +4,8 @@
   stroke-width: 0;
   cursor: pointer;
 }
+
+.station:focus {
+  outline: none;
+  border: 2px solid black;
+}

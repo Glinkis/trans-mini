@@ -1,8 +1,7 @@
 import anime from "animejs"
 import { memo } from "react"
-import type { MouseEvent, PointerEvent } from "react"
+import type { MouseEvent, PointerEvent, FocusEvent } from "react"
 
-import { useSocket } from "../misc/useSocket"
 import type { Station } from "../types"
 
 import styles from "./StationGraphic.module.css"
@@ -12,52 +11,83 @@ export interface Props {
 }
 
 export const StationGraphic = memo(function Station({ station }: Props) {
-  const socket = useSocket()
-
-  function animateCircle(circle: SVGCircleElement | null) {
-    anime({
-      targets: circle,
-      r: 12,
-    })
-  }
-
   function handleClick(event: MouseEvent<SVGCircleElement>) {
     event.stopPropagation()
-    socket.emit("remove-station", station.uid)
   }
 
   function handleOver(event: PointerEvent<SVGCircleElement>) {
-    anime.remove(event.target)
-    anime({
-      targets: event.target,
-      r: 24,
-      stroke: "rgb(200 30 60 / 1)",
-      "stroke-width": {
-        value: 8,
-        delay: 150,
-      },
-    })
+    if (event.currentTarget !== document.activeElement) {
+      anime.remove(event.currentTarget)
+      animateOver(event.currentTarget)
+    }
   }
 
   function handleOut(event: PointerEvent<SVGCircleElement>) {
-    anime.remove(event.target)
-    anime({
-      targets: event.target,
-      r: 12,
-      stroke: "rgb(0 0 0 / 0)",
-      "stroke-width": 0,
-    })
+    if (event.currentTarget !== document.activeElement) {
+      anime.remove(event.currentTarget)
+      animateOut(event.currentTarget)
+    }
+  }
+
+  function handleFocus(event: FocusEvent<SVGCircleElement>) {
+    anime.remove(event.currentTarget)
+    animateFocus(event.currentTarget)
+  }
+
+  function handleBlur(event: FocusEvent<SVGCircleElement>) {
+    anime.remove(event.currentTarget)
+    animateBlur(event.currentTarget)
   }
 
   return (
     <circle
+      tabIndex={0}
       cx={station.x}
       cy={station.y}
-      ref={animateCircle}
+      ref={animateCreated}
       onClick={handleClick}
       onPointerOver={handleOver}
       onPointerOut={handleOut}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
       className={styles.station}
     />
   )
 })
+
+function animateCreated(target: SVGCircleElement | null) {
+  anime({
+    targets: target,
+    r: 12,
+  })
+}
+
+function animateOver(target: SVGCircleElement | null) {
+  anime({ targets: target, r: 16 })
+}
+
+function animateOut(target: SVGCircleElement | null) {
+  anime({ targets: target, r: 12 })
+}
+
+function animateFocus(target: SVGCircleElement | null) {
+  anime({
+    targets: target,
+    r: 32,
+    stroke: "rgb(200 30 60 / 1)",
+    "stroke-width": {
+      value: 8,
+      delay: 150,
+    },
+  })
+}
+
+function animateBlur(target: SVGCircleElement | null) {
+  anime.remove(target)
+  anime({
+    targets: target,
+    r: 12,
+    stroke: "rgb(200 30 60 / 0)",
+    "stroke-width": 0,
+  })
+}
