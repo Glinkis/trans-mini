@@ -1,6 +1,8 @@
-import styles from "../styles/Home.module.css"
-import { useEffect, useRef, useState, MouseEvent } from "react"
+import anime from "animejs"
+import { useEffect, useRef, useState, MouseEvent, useLayoutEffect } from "react"
+
 import { useSocket } from "../misc/useSocket"
+import styles from "../styles/Home.module.css"
 
 interface Circle {
   x: string
@@ -34,12 +36,26 @@ export default function Home() {
     })
   }
 
+  function animateCircle(circle: SVGCircleElement | null) {
+    anime({
+      targets: circle,
+      duration: 1000,
+      r: 20,
+    })
+  }
+
   return (
     <div className={styles.container}>
       <main className={styles.main} onClick={handleClick}>
         <svg className={styles.canvas} ref={svg}>
           {circles.map((circle, i) => (
-            <circle key={i} cx={circle.x} cy={circle.y} r="2%" />
+            <circle
+              key={i}
+              cx={circle.x}
+              cy={circle.y}
+              ref={animateCircle}
+              r="0"
+            />
           ))}
         </svg>
       </main>

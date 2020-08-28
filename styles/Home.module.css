@@ -21,7 +21,6 @@
 
 .canvas {
   width: 100vw;
-  stroke-width: 0.75%;
-  stroke: var(--text-color);
+  fill: var(--text-color);
   cursor: pointer;
 }
