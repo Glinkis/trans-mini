@@ -1,5 +1,6 @@
 import socketIO from "socket.io"
 import { NextApiRequest, NextApiResponse, PageConfig } from "next"
+import type { Station } from "../../types"
 
 export const config: PageConfig = {
   api: {
@@ -11,11 +12,6 @@ interface User {
   name: string
 }
 
-interface Circle {
-  x: string
-  y: string
-}
-
 const users = new Map<string, User>()
 
 export default (req: NextApiRequest, res: NextApiResponse) => {
@@ -24,7 +20,7 @@ export default (req: NextApiRequest, res: NextApiResponse) => {
   if (!server.io) {
     const io = socketIO(server)
 
-    const circles: Circle[] = []
+    const stations: Station[] = []
 
     io.on("connection", socket => {
       const user: User = {
@@ -39,14 +35,17 @@ export default (req: NextApiRequest, res: NextApiResponse) => {
         users.delete(socket.id)
       })
 
-      socket.on("add-circle", (circle: Circle) => {
-        circles.push(circle)
-        io.emit("add-circle", circle)
+      socket.on("create-station", (params: Omit<Station, "uid">) => {
+        io.emit("create-station", createStation(stations, params))
+      })
+
+      socket.on("remove-station", (uid: string) => {
+        io.emit("remove-station", removeStation(stations, uid))
       })
 
       socket.emit("message", `Your assigned name is "${user.name}"`)
 
-      socket.emit("intialize-state", circles)
+      socket.emit("intialize-state", stations)
     })
 
     server.io = io
@@ -56,3 +55,17 @@ export default (req: NextApiRequest, res: NextApiResponse) => {
 
   res.end()
 }
+
+const createStation = (stations: Station[], params: Omit<Station, "uid">) => {
+  const station = { uid: getUID(), ...params }
+  stations.push(station)
+  return station
+}
+
+const removeStation = (stations: Station[], uid: string) => {
+  const index = stations.findIndex(station => station.uid === uid)
+  if (index) stations.splice(index, 1)
+  return uid
+}
+
+const getUID = (id => () => `uuid-${id++}`)(0)

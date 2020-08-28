@@ -1,0 +1,6 @@
+.station {
+  fill: var(--text-color);
+  stroke: rgb(200 30 60 / 1);
+  stroke-width: 0;
+  cursor: pointer;
+}

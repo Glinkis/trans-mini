@@ -1,66 +1,64 @@
-import anime from "animejs"
-import { useEffect, useRef, useState, MouseEvent, useLayoutEffect } from "react"
+import { useEffect, useRef, useState } from "react"
+import type { MouseEvent } from "react"
 
+import type { Station } from "../types"
 import { useSocket } from "../misc/useSocket"
+import { StationGraphic } from "../components/StationGraphic"
 import styles from "../styles/Home.module.css"
 
-interface Circle {
-  x: string
-  y: string
-}
+type Stations = readonly Station[]
 
 export default function Home() {
-  const [circles, setCircles] = useState<Circle[]>([])
-
   const svg = useFullscreenSVG()
   const socket = useSocket()
 
-  useEffect(() => {
-    socket.on("intialize-state", setCircles)
+  const [stations, setStations] = useState<Stations>([])
 
-    socket.on("add-circle", (circle: Circle) => {
-      setCircles(state => [...state, circle])
+  useEffect(() => {
+    socket.on("intialize-state", setStations)
+
+    socket.on("create-station", (station: Station) => {
+      setStations(state => createStation(state, station))
+    })
+
+    socket.on("remove-station", (uid: string) => {
+      setStations(state => removeStation(state, uid))
     })
   }, [socket])
 
-  const handleClick = (event: MouseEvent<HTMLElement>) => {
+  const handleClick = (event: MouseEvent) => {
     event.preventDefault()
 
-    if (svg.current == null) {
-      return
-    }
-
-    socket.emit("add-circle", {
-      x: `${(event.clientX / svg.current.clientWidth) * 100}%`,
-      y: `${(event.clientY / svg.current.clientHeight) * 100}%`,
-    })
-  }
-
-  function animateCircle(circle: SVGCircleElement | null) {
-    anime({
-      targets: circle,
-      duration: 1000,
-      r: 20,
+    socket.emit("create-station", {
+      x: `${(event.clientX / svg.current!.clientWidth) * 100}%`,
+      y: `${(event.clientY / svg.current!.clientHeight) * 100}%`,
     })
   }
 
   return (
     <div className={styles.container}>
-      <main className={styles.main} onClick={handleClick}>
-        <svg className={styles.canvas} ref={svg}>
-          {circles.map((circle, i) => (
-            <circle
-              key={i}
-              cx={circle.x}
-              cy={circle.y}
-              ref={animateCircle}
-              r="0"
-            />
+      <main className={styles.main}>
+        <svg className={styles.canvas} ref={svg} onClick={handleClick}>
+          {stations.map(circle => (
+            <StationGraphic station={circle} key={circle.uid} />
           ))}
         </svg>
       </main>
     </div>
   )
+}
+
+function createStation(state: Stations, station: Station) {
+  if (state.some(({ uid }) => uid === station.uid)) {
+    return state
+  }
+  return [...state, station]
+}
+
+function removeStation(state: Stations, uid: string): Station[] {
+  return state.filter(station => {
+    return station.uid !== uid
+  })
 }
 
 function useFullscreenSVG() {
