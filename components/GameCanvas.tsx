@@ -1,33 +1,15 @@
-import { useRef, useEffect } from "react"
+import { MouseEvent } from "react"
 import styles from "./GameCanvas.module.css"
 
 interface Props {
   children: React.ReactNode
+  onClick(event: MouseEvent<SVGSVGElement>): void
 }
 
-export function GameCanvas({ children }: Props) {
-  const ref = useFullscreenSVG()
-
+export function GameCanvas({ children, onClick }: Props) {
   return (
-    <svg className={styles.canvas} ref={ref}>
+    <svg className={styles.canvas} onClick={onClick} viewBox="0 0 200 200">
       {children}
     </svg>
   )
-}
-
-function useFullscreenSVG() {
-  const svg = useRef<SVGSVGElement>(null)
-
-  useEffect(() => {
-    const updateSize = () => {
-      if (svg.current) {
-        svg.current.setAttribute("viewBox", `0 0 ${innerWidth} ${innerHeight}`)
-      }
-    }
-    updateSize()
-    window.addEventListener("resize", updateSize)
-    return () => window.removeEventListener("resize", updateSize)
-  }, [])
-
-  return svg
 }

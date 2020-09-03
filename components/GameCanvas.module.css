@@ -1,4 +1,6 @@
 .canvas {
-  width: 100vw;
+  min-width: calc(100vmin - 64px);
   cursor: pointer;
+  border: 2px solid var(--text-color);
+  border-radius: 16px;
 }

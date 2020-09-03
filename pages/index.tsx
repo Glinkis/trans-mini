@@ -26,18 +26,26 @@ export default function Home() {
     })
   }, [socket])
 
-  const handleClick = (event: MouseEvent<HTMLElement>) => {
+  const handleClick = (event: MouseEvent<SVGSVGElement>) => {
     event.preventDefault()
 
+    const bounds = event.currentTarget.getBoundingClientRect()
+
+    const positionX = event.clientX - bounds.left
+    const positionY = event.clientY - bounds.top
+
+    const sizeX = bounds.width
+    const sizeY = bounds.height
+
     socket.emit("create-station", {
-      x: `${(event.clientX / event.currentTarget.clientWidth) * 100}%`,
-      y: `${(event.clientY / event.currentTarget.clientHeight) * 100}%`,
+      x: `${(positionX / sizeX) * 100}%`,
+      y: `${(positionY / sizeY) * 100}%`,
     })
   }
 
   return (
-    <main className={styles.main} onClick={handleClick}>
-      <GameCanvas>
+    <main className={styles.main}>
+      <GameCanvas onClick={handleClick}>
         {stations.map(circle => (
           <StationGraphic station={circle} key={circle.uid} />
         ))}
