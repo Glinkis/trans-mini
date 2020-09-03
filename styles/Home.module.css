@@ -1,25 +1,8 @@
-.container {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  background-color: var(--background-color);
-}
-
 .main {
-  flex: 1;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
   align-items: center;
-}
+  justify-content: center;
 
-.title {
-  color: var(--text-color);
-}
-
-.canvas {
-  width: 100vw;
-  cursor: pointer;
+  min-height: 100vh;
+  background-color: var(--background-color);
 }

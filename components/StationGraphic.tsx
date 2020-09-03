@@ -56,10 +56,7 @@ export const StationGraphic = memo(function Station({ station }: Props) {
 })
 
 function animateCreated(target: SVGCircleElement | null) {
-  anime({
-    targets: target,
-    r: 12,
-  })
+  anime({ targets: target, r: 12 })
 }
 
 function animateOver(target: SVGCircleElement | null) {

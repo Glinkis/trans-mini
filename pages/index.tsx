@@ -1,15 +1,15 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import type { MouseEvent } from "react"
 
 import type { Station } from "../types"
 import { useSocket } from "../misc/useSocket"
+import { GameCanvas } from "../components/GameCanvas"
 import { StationGraphic } from "../components/StationGraphic"
 import styles from "../styles/Home.module.css"
 
 type Stations = readonly Station[]
 
 export default function Home() {
-  const svg = useFullscreenSVG()
   const socket = useSocket()
 
   const [stations, setStations] = useState<Stations>([])
@@ -26,25 +26,23 @@ export default function Home() {
     })
   }, [socket])
 
-  const handleClick = (event: MouseEvent) => {
+  const handleClick = (event: MouseEvent<HTMLElement>) => {
     event.preventDefault()
 
     socket.emit("create-station", {
-      x: `${(event.clientX / svg.current!.clientWidth) * 100}%`,
-      y: `${(event.clientY / svg.current!.clientHeight) * 100}%`,
+      x: `${(event.clientX / event.currentTarget.clientWidth) * 100}%`,
+      y: `${(event.clientY / event.currentTarget.clientHeight) * 100}%`,
     })
   }
 
   return (
-    <div className={styles.container}>
-      <main className={styles.main}>
-        <svg className={styles.canvas} ref={svg} onClick={handleClick}>
-          {stations.map(circle => (
-            <StationGraphic station={circle} key={circle.uid} />
-          ))}
-        </svg>
-      </main>
-    </div>
+    <main className={styles.main} onClick={handleClick}>
+      <GameCanvas>
+        {stations.map(circle => (
+          <StationGraphic station={circle} key={circle.uid} />
+        ))}
+      </GameCanvas>
+    </main>
   )
 }
 
@@ -59,21 +57,4 @@ function removeStation(state: Stations, uid: string): Station[] {
   return state.filter(station => {
     return station.uid !== uid
   })
-}
-
-function useFullscreenSVG() {
-  const svg = useRef<SVGSVGElement>(null)
-
-  useEffect(() => {
-    const updateSize = () => {
-      if (svg.current) {
-        svg.current.setAttribute("viewBox", `0 0 ${innerWidth} ${innerHeight}`)
-      }
-    }
-    updateSize()
-    window.addEventListener("resize", updateSize)
-    return () => window.removeEventListener("resize", updateSize)
-  }, [])
-
-  return svg
 }
